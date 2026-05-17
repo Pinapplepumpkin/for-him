@@ -92,11 +92,12 @@
         }
 
         video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center;
-        }
+    width: 92%; /* Pulls the video slightly away from the left and right edges */
+    height: 92%; /* Pulls the video slightly away from the top and bottom edges */
+    object-fit: contain; /* Shrinks the video safely to fit inside the new box without cutting it off */
+    object-position: center;
+    margin: auto;
+}
 
         /* PART 2.5: Fullscreen Dark Word-by-Word Interlude */
         .typing-screen {
