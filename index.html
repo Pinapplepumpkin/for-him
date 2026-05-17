@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For You</title>
+    <!-- Importing a beautiful handwriting font for the dedication and final message -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #0b141a; /* WhatsApp Dark Mode Background */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            color: #ffffff;
+        }
+
+        /* PART 1: The Entrance */
+        .intro-screen {
+            text-align: center;
+            transition: opacity 1s ease, transform 1s ease;
+            opacity: 1;
+            z-index: 10;
+            max-width: 500px;
+            padding: 20px;
+            position: absolute;
+        }
+
+        .intro-screen.hide {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+        }
+
+        h1 {
+            font-weight: 300;
+            font-size: 1.6rem;
+            line-height: 1.6;
+            margin-bottom: 2.5rem;
+            color: #e0e0e0;
+            letter-spacing: -0.5px;
+        }
+
+        .reveal-btn {
+            background: none;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            padding: 12px 30px;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.4s ease;
+        }
+
+        .reveal-btn:hover {
+            background: #ffffff;
+            color: #0d0d0d;
+            border-color: #ffffff;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        /* PART 2: Fullscreen Lyric Video */
+        .fullscreen-video-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1.5s ease;
+            background: #000000;
+        }
+
+        .fullscreen-video-wrapper.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        /* PART 2.5: Fullscreen Dark Word-by-Word Interlude */
+        .typing-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000000;
+            z-index: 3;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .typing-screen.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .typewritten-text {
+            font-family: "Courier New", Courier, monospace;
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #ffffff;
+            text-align: center;
+            line-height: 1.6;
+            letter-spacing: 1px;
+            max-width: 600px;
+        }
+
+        /* PART 3: Responsive WhatsApp UI Chat Screen */
+        .whatsapp-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 5;
+            background-color: #0b141a;
+            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); /* WhatsApp iconic wallpaper pattern */
+            background-blend-mode: overlay;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1.5s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .whatsapp-container.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Chat Header */
+        .chat-header {
+            background-color: #202c33;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+            position: relative;
+            z-index: 6;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #6a7175;
+            margin-right: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .user-info .name {
+            font-weight: 500;
+            font-size: 1rem;
+            color: #e9edef;
+        }
+
+        .user-info .status {
+            font-size: 0.8rem;
+            color: #8696a0;
+            margin-top: 2px;
+            height: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .user-info .status.typing-color {
+            color: #53bdeb;
+        }
+
+        /* Chat History Box */
+        .chat-messages {
+            flex: 1;
+            padding: 20px 5%;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            scroll-behavior: smooth;
+        }
+
+        /* Custom Center Handwriting Cards (For Dedication & Final Reveal) */
+        .handwriting-center-bubble {
+            align-self: center;
+            text-align: center;
+            max-width: 85%;
+            padding: 20px 15px;
+            font-family: 'Caveat', cursive;
+            font-size: 1.8rem;
+            line-height: 1.4;
+            color: #53bdeb; /* Accent coloring to make it stand out beautifully */
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s ease, transform 1s ease;
+            margin: 15px 0;
+            white-space: pre-line;
+        }
+
+        .handwriting-center-bubble.final-style {
+            font-size: 2.1rem;
+            color: #e9edef;
+            text-shadow: 0 0 10px rgba(83, 189, 235, 0.3);
+            max-width: 90%;
+        }
+
+        /* Message Bubbles */
+        .message-bubble {
+            max-width: 75%;
+            padding: 8px 12px 14px 12px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            line-height: 1.45;
+            position: relative;
+            word-wrap: break-word;
+            white-space: pre-line;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            background-color: #202c33;
+            color: #e9edef;
+            align-self: flex-start;
+            border-top-left-radius: 0px;
+        }
+
+        @media (min-width: 768px) {
+            .chat-messages { padding: 20px 25%; }
+            .message-bubble { max-width: 65%; }
+            .handwriting-center-bubble { max-width: 60%; font-size: 2.2rem; }
+            .handwriting-center-bubble.final-style { max-width: 70%; font-size: 2.6rem; }
+        }
+
+        .message-bubble.visible, .handwriting-center-bubble.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Custom timestamp styling */
+        .timestamp {
+            position: absolute;
+            bottom: 3px;
+            right: 8px;
+            font-size: 0.68rem;
+            color: #8696a0;
+        }
+
+        /* Input area at the bottom */
+        .chat-input-area {
+            background-color: #202c33;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            color: #8696a0;
+            font-size: 0.95rem;
+        }
+        .fake-input {
+            background-color: #2a3942;
+            border-radius: 8px;
+            padding: 9px 12px;
+            flex: 1;
+            color: #8696a0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BACKGROUND MUSIC FOR PART 3 ONLY -->
+    <!-- Replace "your-song.mp3" with your exact audio filename -->
+    <audio id="bgMusic" loop src="your-song.mp3"></audio>
+
+    <!-- PART 1: Intro Screen -->
+    <div class="intro-screen" id="introScreen">
+        <h1>You asked me why I choose you and why I stay. A simple text message felt too small, so I need you to look at me instead...</h1>
+        <button class="reveal-btn" onclick="startExperience()">LOOK AT ME</button>
+    </div>
+
+    <!-- PART 2: Fullscreen Lyric Video -->
+    <div class="fullscreen-video-wrapper" id="partTwoContainer">
+        <video id="lyricVideo" playsinline>
+            <source src="lyric-video.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <!-- PART 2.5: Transitional Dark Screen for word typing -->
+    <div class="typing-screen" id="typingScreen">
+        <div class="typewritten-text" id="typewrittenText"></div>
+    </div>
+
+    <!-- PART 3: Responsive WhatsApp UI Chat Screen -->
+    <div class="whatsapp-container" id="whatsappContainer">
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="avatar">❤</div>
+            <div class="user-info">
+                <div class="name">My Girl</div>
+                <div class="status" id="chatStatus">online</div>
+            </div>
+        </div>
+
+        <!-- Messages Area -->
+        <div class="chat-messages" id="chatMessages">
+            <!-- Messages injected here dynamically -->
+        </div>
+
+        <!-- Fake Footer for Reality vibe -->
+        <div class="chat-input-area">
+            <div class="fake-input">Read-only confession thread...</div>
+        </div>
+    </div>
+
+    <script>
+        const intro = document.getElementById('introScreen');
+        const partTwoContainer = document.getElementById('partTwoContainer');
+        const lyricVideo = document.getElementById('lyricVideo');
+        const typingScreen = document.getElementById('typingScreen');
+        const typewrittenText = document.getElementById('typewrittenText');
+        const whatsappContainer = document.getElementById('whatsappContainer');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatStatus = document.getElementById('chatStatus');
+        const bgMusic = document.getElementById('bgMusic');
+
+        // Dark Screen Transitional Text
+        const interludeText = "Kaani Nuv Adigav Kabatti...";
+
+        // Confession blocks 1 - 10
+        const textMessages = [
+            `This Is for You....`,
+            `Our journey started with small glances peculiar thoughts...had many hidden smiles etc. I wasnt certain "you were the one" ani in the beggining itself\n\nLike a plant which slowly emergences from the seed then roots then stems then leaves and finally to flowers and fruits....I would be honest I felt attraction towards you at first...I felt can anyone glance at me with that much affection in their eyes.. I am not even that much beauty in our class but he is watching me like the most beautiful girl he have ever laid his eyes on...`,
+            `Those eyes capivated me...your gestures, your attention has drawn me towards you...then came the waiting...waiting for those eyes to fall on me. I wanted the changes your eyes made by seeing me in the room. I wanted those eyes to watch me. Slowly that made myself wanna look even more beautiful for those eyes.. I only wanted them to look at me. To praise me...to look me like you wanna kiss me. Then I realized...I never felt this much to any boy to make him wanna notice me to make him wanna like me to make him wanna talk to me...most importantly I absolutely had no idea I wanna make him wanna touch me...`,
+            `the realization turned to decision...that if those eyes is what makes me crave for more...crave for something i didnt dare to imagine from another boy called "love" then i wouldnt mind to only look beautiful to those eyes...To let them rake through my body one day...To take care of me for the rest of my life...`,
+            `It didnt happen overnight....\nI blushed the day you proposed me..\nI couldnt stop tapping my legs the day you touched me..\nI felt cherished every single day I was with you...\nThe decision the realization was all by you...for you and only with you...\nI knew I was falling unapologitically deeply irrevocably for you and I had no complain to it\nI embraced that feeling...I relished in it and accepted that whatever this is..this is mine and I wont loose it.`,
+            `When it was time for goodbye...I felt like it were a dream and I would wake up next day and come to school again to see you..but it didnt happen. What I went through those 2 years were wholly for myself. I focused on myself I wanted something and I worked on it. I didnt really remember anyone for that matter...no one was visible to me except my goal..and I too lived like that`,
+            `After my Inter...I cried to myself for many days...wishing for a one glance of how you were doing...Then came the day when I met you agian..It was like universe was giving me signs that this day I wouldnt forget...and that was true...\nI clearly remember I rejected you that day..because I dont know myself...If what was in the past is still there between us? or is it only a phase..I thought for many days...I fought myself many days to what this hollow feeling I felt after that day.`,
+            `But I got my answer the day I saw you for the second time in college induction...The attraction I felt back then which converted to something more beautiful then the desire to be beside you...to be called your "wife" had seeped deep inside me...\nIt felt right to be beside you...everything came to a crashing realization that..\n"Aaahh again this feeling this pit called a relationship I wanna drown myself is again with me..Now there is no turning back!"`,
+            `I approached you, talked to you and now here we are...\nI really can say I would have regretted if I didnt talked to you that day even after rejecting you..Even if I seemed shameless for the talk after saying "no". It felt just a fleeting moment...I left whatever shame I had for that one talk...I opened this heart bare in that moment in front of you hoping for another chance...I prayed that this man should be mine neverthless the universe had heard my cries and granted me my wishes yet again..I felt all my worries gone...A person has come to take care of me...And I too have that person to take care of and who I call as"Mine" is here....You don't know how much joy came to me along with you...I decided then and there whatever I am, wherever I am...it would be you who will tie the knot on my neck....I don't care for anymore anyone and anything..this is my will...later its gods will!`,
+            `The talks we had, the fights we had...those traumatic days only made my resolve to solve this...solve myself and be a better half for you grow stronger...I never felt that it was too much to handle or I would be better off without you, so it will be less pain to me...leaving you was pain... And my every mistake was put like a painting inside my brain of a home..It will always remain as a memory and will not define the way I feel for you...whatever we went through...whatever comes through I am not afraid to face it until my hand is clasped with you`,
+            `You were the most beautiful thing that ever happened to me which I wouldnt dare wanna loose and wouldnt complain if it becomes double tripple to handle the bundle of joys that comes with you...`
+        ];
+
+        // Part 11: Final message to type out word by word
+        const finalTypingMessage = "I don't know how much more I need to say it in words but all I can say is..\nYou fell first, but I fell harder! ❤";
+
+        // Web Audio Synthesizer to reliably make realistic mechanical click tones on every tap
+        let audioCtx;
+        function playTypeSound() {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                
+                osc.type = 'triangle';
+                // Slight frequency variations to mimic real mechanical adjustments
+                osc.frequency.setValueAtTime(120 + Math.random() * 40, audioCtx.currentTime);
+                
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                // Ultra-short envelope for tight clicking acoustic signatures
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.04);
+            } catch(e) { console.log("Audio play blocked/unsupported", e); }
+        }
+
+        function startExperience() {
+            intro.classList.add('hide');
+            partTwoContainer.classList.add('active');
+            lyricVideo.play().catch(error => console.log(error));
+
+            lyricVideo.onended = function() {
+                runTypingInterlude();
+            };
+        }
+
+        function runTypingInterlude() {
+            partTwoContainer.classList.remove('active');
+            typingScreen.classList.add('active');
+            
+            const words = interludeText.split(" ");
+            let wordIndex = 0;
+            let currentString = "";
+
+            function typeNextWord() {
+                if (wordIndex < words.length) {
+                    currentString += words[wordIndex] + " ";
+                    typewrittenText.innerText = currentString;
+                    playTypeSound();
+                    
+                    wordIndex++;
+                    // Dynamic typing pauses (e.g., lingering slightly longer if punctuation occurs)
+                    let currentDelay = words[wordIndex - 1].includes('...') ? 700 : 350;
+                    setTimeout(typeNextWord, currentDelay);
+                } else {
+                    // Let the full phrase rest on screen for 1.5 seconds before dissolving into WhatsApp
+                    setTimeout(() => {
+                        typingScreen.classList.remove('active');
+                        setTimeout(transitionToWhatsApp, 1000);
+                    }, 1500);
+                }
+            }
+
+            // Short pre-delay pause on the blank dark screen before keys start engaging
+            setTimeout(typeNextWord, 1000);
+        }
+
+        function transitionToWhatsApp() {
+            whatsappContainer.classList.add('active');
+            
+            // TRIGGERS AUDIO HERE RIGHT AT THE START OF PART 3
+            bgMusic.play().catch(error => console.log("Music playback failed:", error));
+            
+            chatStatus.innerText = "typing...";
+            chatStatus.classList.add('typing-color');
+            
+            setTimeout(() => {
+                chatStatus.innerText = "online";
+                chatStatus.classList.remove('typing-color');
+                
+                const dedicationBubble = document.createElement('div');
+                document.getElementById('bgMusic')
+                dedicationBubble.className = 'handwriting-center-bubble';
+                dedicationBubble.innerText = "To Harrsha Prakhyat who made my heart feel things..";
+                chatMessages.appendChild(dedicationBubble);
+                
+                setTimeout(() => {
+                    dedicationBubble.classList.add('visible');
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    
+                    setTimeout(() => {
+                        renderMessageContainer(0);
+                    }, 3500);
+                }, 50);
+            }, 1500);
+        }
+
+        function renderMessageContainer(index) {
+            if (index < textMessages.length) {
+                chatStatus.innerText = "typing...";
+                chatStatus.classList.add('typing-color');
+                
+                setTimeout(() => {
+                    chatStatus.innerText = "online";
+                    chatStatus.classList.remove('typing-color');
+                    createAndAppendBubble(textMessages[index]);
+                    
+                    setTimeout(() => {
+                        renderMessageContainer(index + 1);
+                    }, 4000); 
+                }, 2000); 
+            } else {
+                triggerFinalWordByWordConfession();
+            }
+        }
+
+        function createAndAppendBubble(text) {
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+            
+            bubble.innerHTML = `${text}<span class="timestamp">${timeString}</span>`;
+            chatMessages.appendChild(bubble);
+            
+            setTimeout(() => {
+                bubble.classList.add('visible');
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 50);
+        }
+
+        function triggerFinalWordByWordConfession() {
+            chatStatus.innerText = "typing...";
+            chatStatus.classList.add('typing-color');
+            
+            const finalBubble = document.createElement('div');
+            finalBubble.className = 'handwriting-center-bubble final-style';
+            chatMessages.appendChild(finalBubble);
+            
+            setTimeout(() => {
+                finalBubble.classList.add('visible');
+            }, 50);
+
+            const words = finalTypingMessage.split(" ");
+            let wordIndex = 0;
+            let currentText = "";
+
+            function printNextWord() {
+                if (wordIndex < words.length) {
+                    currentText += words[wordIndex] + " ";
+                    finalBubble.innerText = currentText;
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    
+                    wordIndex++;
+                    setTimeout(printNextWord, 280); 
+                } else {
+                    chatStatus.innerText = "online";
+                    chatStatus.classList.remove('typing-color');
+                }
+            }
+            
+            setTimeout(printNextWord, 3000); 
+        }
+    </script>
+
+</body>
+</html>
